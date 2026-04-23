@@ -1,0 +1,11 @@
+[package]
+name = "mkiso"
+version = "0.1.0"
+kern = "0.7.1"
+publish = false
+description = "Host tool that turns a prepared Limine tree into a bootable ISO image"
+license = "MIT"
+
+[[bin]]
+name = "mkiso"
+root = "src/main.rn"

@@ -1,0 +1,14 @@
+mod boot;
+
+#[export_name("_start")]
+fn kmain() void {
+
+    let respones = boot.framebuffer_request.respones;
+
+    for(;;) {
+        @asm(.{
+            asm: "hlt",
+            volatile: true
+        });
+    }
+}

@@ -1,0 +1,19 @@
+[package]
+name = "coolpotos_kern"
+version = "0.1.0"
+kern = "0.7.1"
+
+[[bin]]
+name = "coolpotos_kern"
+root = "src/main.rn"
+
+[runtime]
+entry = "none"
+libc = false
+bundle = "base"
+
+[build-dependencies]
+mkiso = { path = "./mkiso", package = "mkiso" }
+
+[resources]
+limine = { git = "https://github.com/limine-bootloader/limine.git", tag = "v11.4.0-binary" }
