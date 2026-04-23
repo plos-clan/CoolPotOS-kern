@@ -3,7 +3,7 @@ mod boot;
 #[export_name("_start")]
 fn kmain() void {
 
-    let respones = boot.framebuffer_request.respones;
+    let response = boot.framebuffer_request.response;
 
     for(;;) {
         @asm(.{
