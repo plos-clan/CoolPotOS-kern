@@ -24,11 +24,11 @@ pub type limine_video_mode = struct {
 };
 
 pub type limine_framebuffer = struct {
-    address: *u8,
-    width: u64,
-    height: u64,
-    pitch: u64,
-    bpp: u16,
+    pub address: *u32,
+    pub width: u64,
+    pub height: u64,
+    pub pitch: u64,
+    pub bpp: u16,
 
     memory_model:u8,
     red_mask_size:u8,
