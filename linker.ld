@@ -3,7 +3,7 @@ OUTPUT_FORMAT(elf64-x86-64)
 ENTRY(_start)
 
 PHDRS {
-    limine_requests PT_LOAD FLAGS(4);
+    limine_requests PT_LOAD FLAGS(6);
     dyn PT_LOAD FLAGS(4);
     text PT_LOAD FLAGS(5);
     rodata PT_LOAD FLAGS(4);
