@@ -9,6 +9,22 @@ static limine_requests_start_marker = [4]u64.{
 #[link_section(".limine_requests_end")]
 static limine_requests_end_marker = [2]u64.{ 0xadc0e0531bb10d03, 0x9572709f31764c62 };
 
+#[retain]
+#[link_section(".limine_requests")]
+static limine_base_revision = [3]u64.{ 0xf9562b2d5c95a6c8, 0x6a7b384944536bdc, 3 };
+// limine revision = 3
+
+extern type limine_stack_size_response = struct {
+    revision:u64,
+};
+
+pub extern type limine_stack_size_request = struct {
+    id: [4]u64,
+    revision: u64,
+    response: *limine_stack_size_response,
+    stack_size: u64,
+};
+
 extern type limine_video_mode = struct {
     pitch: u64,
     width: u64,
@@ -58,6 +74,42 @@ pub extern type limine_framebuffer_request = struct {
     pub response: *limine_framebuffer_response,
 };
 
+pub type limine_memmap_type = enum {
+    LIMINE_MEMMAP_USABLE = 0,
+    LIMINE_MEMMAP_RESERVED = 1,
+    LIMINE_MEMMAP_ACPI_RECLAIMABLE = 2,
+    LIMINE_MEMMAP_ACPI_NVS = 3,
+    LIMINE_MEMMAP_BAD_MEMORY = 4,
+    LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE = 5,
+};
+
+pub extern type limine_memmap_entry = struct {
+    base: u64,
+    length: u64,
+    ty: limine_memmap_type,
+};
+
+pub extern type limine_memmap_response = struct{
+    revision: u64,
+    entry_count: u64,
+    entries: **limine_memmap_entry,
+};
+
+pub extern type limine_memmap_request = struct{
+    id: [4]u64,
+    revision: u64,
+    response: *limine_memmap_response,
+};
+
+#[retain]
+#[link_section(".limine_requests")]
+static stack_size_request = limine_stack_size_request .{
+    id: .{0xc7b1dd30df4c8b88, 0x0a82e883a194f07b, 0x224ef0460a8e8926, 0xe1cb0fc25f46ea3d},
+    revision: 0,
+    response: 0 as *limine_stack_size_response,
+    stack_size: 131072,
+};
+
 #[retain]
 #[link_section(".limine_requests")]
 pub static mut framebuffer_request = limine_framebuffer_request .{
@@ -65,3 +117,20 @@ pub static mut framebuffer_request = limine_framebuffer_request .{
     revision: 0,
     response: 0 as *limine_framebuffer_response,
 };
+
+
+#[retain]
+#[link_section(".limine_requests")]
+pub static mut memmap_request = limine_memmap_request .{
+    id: .{0xc7b1dd30df4c8b88, 0x0a82e883a194f07b, 0x67cf3d9d378a806f, 0xe304acdfc50c3c62},
+    revision: 0,
+    response: 0 as *limine_memmap_response,
+};
+
+pub fn boot_framebuffer_respones() *limine_framebuffer_response {
+    framebuffer_request.response
+}
+
+pub fn boot_memmap_respones() *limine_memmap_response {
+    memmap_request.response
+}

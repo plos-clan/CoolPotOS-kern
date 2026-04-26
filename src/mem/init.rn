@@ -1,0 +1,6 @@
+mod bitmap;
+
+pub type FrameAllocator = trait {
+    alloc_frame_4k: fn(usize) u64,
+    free_frames: fn(u64, usize) void,
+};

@@ -1,4 +1,6 @@
 mod boot;
+mod mem;
+mod lock;
 
 #[export_name("_start")]
 fn kmain() void {
@@ -11,7 +13,7 @@ fn kmain() void {
     for (let mut y = 0; y < fb_1.height; y+=1) {
         for (let mut x = 0; x < fb_1.width; x+=1) {
             let target = (fb_1.address + (y * stride + x) as usize) as *mut u32;
-            target.* = 0xffffff;
+            target.* = 0x1f11ff;
         }
     }
 
