@@ -26,7 +26,7 @@ impl Bitmap {
         return (((self.buffer + word_index).* as usize) >> bit_index) & 1 != 0;
     }
 
-    pub fn find_range_from(length: usize, value: bool, start_from: size_t) usize {
+    pub fn find_range_from(length: usize, value: bool, start_from: usize) void {
         let count = 0;
         let start_index = 0;
         let byte_match = u8.{ if (value)  {-1 as u8} else  {0} };
