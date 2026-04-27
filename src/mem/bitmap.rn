@@ -1,4 +1,5 @@
-use /lock.{SpinLock, SPIN_UNLOCKED, spin_lock, spin_unlock};
+use /lock.{SpinLock, SPIN_UNLOCKED};
+use base.coll.range;
 
 pub type Bitmap = struct {
     lock: SpinLock,
@@ -7,16 +8,117 @@ pub type Bitmap = struct {
     bitmap_refcount: u64,
 };
 
-impl Bitmap {
-    pub fn new(buffer: *u8,size: usize) Bitmap {
-        return .{
-            lock: SPIN_UNLOCKED,
-            buffer: buffer,
-            length: size * 8,
-            bitmap_refcount: 1
-        };
+pub fn bitmap_init(buffer: *u8,size: usize) Bitmap {
+    return .{
+        lock: SPIN_UNLOCKED,
+        buffer: buffer,
+        length: size * 8,
+        bitmap_refcount: 1
+    };
+}
+
+impl *mut Bitmap {
+    pub fn find_range_from(length: usize, value: bool, start_from: usize) usize {
+        self.lock..&.lock();
+        let mut count = 0;
+        let mut start_index = 0;
+        let byte_match = if (value)  {-1 as u8} else  {0};
+        let mut byte_idx = start_from / 8;
+        while (byte_idx < self.length / 8) {
+            let byte = (self.buffer +byte_idx).*;
+            if (byte == (if (byte_match == 0) 1 else 0)) {
+                count = 0;
+            }else if (byte == byte_match) {
+                if (length < 8) {
+                    self.lock..&.unlock();
+                    return byte_idx * 8;
+                }
+                if (count == 0) {
+                    start_index = byte_idx * 8;
+                }
+                count += 8;
+                if (count >= length) {
+                    self.lock..&.unlock();
+                    return start_index;
+                }
+            }else {
+                for (i: range(0, 8)) {
+                    let bit = i as usize;
+                    let bit_value = (byte as usize >> bit) & 1 != 0;
+                    if (bit_value == value) {
+                        if (count == 0) {
+                            start_index = byte_idx * 8 + bit;
+                        }
+                        count+=1;
+                        if (count == length) {
+                            self.lock..&.unlock();
+                            return start_index;
+                        }
+                    } else {
+                        count = 0;
+                    }
+                }
+            }
+            byte_idx += 1;
+        }
+        self.lock..&.unlock();
+        return -1 as usize;
     }
 
+    pub fn find_range(length: usize, value: bool) usize {
+        return self.find_range_from(length, value, 0);
+    }
+
+    pub fn set(index: usize, value: bool) void {
+        let word_index = index / 8;
+        let bit_index  = index % 8;
+        if (word_index > self.length){
+            return;
+        }
+        let byte = (self.buffer + word_index) as *mut u8;
+        let mask = 1 << bit_index;
+        if (value) {
+            byte.* |= mask as u8;
+        } else {
+            byte.* &= ~mask as u8;
+        }
+    }
+
+    pub fn set_range(start: usize, end: usize, value: bool) void {
+        if (start >= end or start >= self.length) {
+            return;
+        }
+        self.lock..&.lock();
+        let start_word = (start + 7) / 8;
+        let end_word   = end / 8;
+
+        let iter_end = (if(start_word * 8 < end) (start_word * 8) else (end));
+        for (i : range(start,iter_end)) {
+            self.set(i as usize, value);
+        }
+
+        if (start_word > end_word) {
+            self.lock..&.unlock();
+            return;
+        }
+
+        if (start_word <= end_word) {
+            let fill_value = if (value) -1 as u8 else 0;
+            for (i: range(start_word, end_word)) {
+                let m_buffer = (self.buffer + (i as usize)) as *mut u8;
+                m_buffer.* = fill_value;
+            }
+        }
+
+        let iter_start = (if(end_word * 8 > start) (end_word * 8) else (start));
+        for (i : range(iter_start, end)) {
+            self.set(i as usize, value);
+        }
+        self.lock..&.unlock();
+    }
+}
+
+impl Bitmap {
     pub fn get(index: usize) bool {
         let word_index = index / 8;
         let bit_index  = index % 8;
@@ -24,11 +126,5 @@ impl Bitmap {
             return false;
         }
         return (((self.buffer + word_index).* as usize) >> bit_index) & 1 != 0;
-    }
-
-    pub fn find_range_from(length: usize, value: bool, start_from: usize) void {
-        let count = 0;
-        let start_index = 0;
-        let byte_match = u8.{ if (value)  {-1 as u8} else  {0} };
     }
 }

@@ -1,34 +1,41 @@
-pub type SpinLock = u8;
+pub type SpinLock = struct {
+    state: u8,
+};
 
-pub const SPIN_UNLOCKED = u8.{0};
-pub const SPIN_LOCKED = u8.{1};
+const LOCK_STATE_UNLOCKED = u8.{0};
+const LOCK_STATE_LOCKED = u8.{1};
+
+pub const SPIN_UNLOCKED = SpinLock.{ state: LOCK_STATE_UNLOCKED };
+pub const SPIN_LOCKED = SpinLock.{ state: LOCK_STATE_LOCKED };
 
 const ATOMIC_RELAXED = 0;
 const ATOMIC_ACQUIRE = 1;
 const ATOMIC_RELEASE = 2;
 
-pub fn spin_lock(lock: *mut SpinLock) void {
-    while (true) {
-        let attempt = @atomicCas[SpinLock](
-            lock,
-            SPIN_UNLOCKED,
-            SPIN_LOCKED,
-            ATOMIC_ACQUIRE,
-            ATOMIC_RELAXED
-        );
-        if (attempt.success) {
-            return;
-        }
+impl *mut SpinLock {
+    pub fn lock() void {
+        while (true) {
+            let attempt = @atomicCas[u8](
+                self.state..&,
+                LOCK_STATE_UNLOCKED,
+                LOCK_STATE_LOCKED,
+                ATOMIC_ACQUIRE,
+                ATOMIC_RELAXED
+            );
+            if (attempt.success) {
+                return;
+            }
 
-        while (@atomicLoad[SpinLock](lock, ATOMIC_RELAXED) == SPIN_LOCKED) {
-            @asm(.{
-                asm: "pause",
-                volatile: true
-            });
+            while (@atomicLoad[u8](self.state..&, ATOMIC_RELAXED) == LOCK_STATE_LOCKED) {
+                @asm(.{
+                    asm: "pause",
+                    volatile: true
+                });
+            }
         }
     }
-}
 
-pub fn spin_unlock(lock: *mut SpinLock) void {
-    @atomicStore[SpinLock](lock, SPIN_UNLOCKED, ATOMIC_RELEASE);
+    pub fn unlock() void {
+        @atomicStore[u8](self.state..&, LOCK_STATE_UNLOCKED, ATOMIC_RELEASE);
+    }
 }
