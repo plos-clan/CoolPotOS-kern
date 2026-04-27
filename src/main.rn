@@ -1,23 +1,11 @@
 mod boot;
-mod mem;
-mod lock;
+pub mod mem;
+pub mod lock;
 
 #[export_name("_start")]
 fn kmain() void {
 
-    let response = boot.framebuffer_request.response;
-    let fb_1 = response.framebuffers.*;
-
-    let stride = fb_1.pitch / 4;
-
-    for (let mut y = 0; y < fb_1.height; y+=1) {
-        for (let mut x = 0; x < fb_1.width; x+=1) {
-            let target = (fb_1.address + (y * stride + x) as usize) as *mut u32;
-            target.* = 0x1f11ff;
-        }
-    }
-
-    for(;;) {
+    while (true){
         @asm(.{
             asm: "hlt",
             volatile: true
