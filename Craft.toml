@@ -12,6 +12,12 @@ entry = "none"
 libc = false
 bundle = "base"
 
+[profile.dev]
+code-model = "kernel"
+
+[profile.release]
+code-model = "kernel"
+
 [build-dependencies]
 mkiso = { path = "./mkiso", package = "mkiso" }
 mkarchive = { path = "./mkarchive", package = "mkarchive" }
