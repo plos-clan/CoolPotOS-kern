@@ -1,9 +1,17 @@
 mod boot;
+pub mod term;
 pub mod mem;
 pub mod lock;
 
+use /mem.init_frame;
+use /term.{terminal_init,terminal_write};
+
 #[export_name("_start")]
 fn kmain() void {
+    terminal_init();
+
+    terminal_write("Hello! CPOS KERN!\n");
+    init_frame();
 
     while (true){
         @asm(.{

@@ -18,7 +18,7 @@ pub fn bitmap_init(buffer: *u8,size: usize) Bitmap {
 }
 
 impl *mut Bitmap {
-    pub fn find_range_from(length: usize, value: bool, start_from: usize) usize {
+    pub fn find_range_from(length: usize, value: bool, start_from: usize) ?usize {
         self.lock..&.lock();
         let mut count = 0;
         let mut start_index = 0;
@@ -31,7 +31,7 @@ impl *mut Bitmap {
             }else if (byte == byte_match) {
                 if (length < 8) {
                     self.lock..&.unlock();
-                    return byte_idx * 8;
+                    return .{ Some:byte_idx * 8};
                 }
                 if (count == 0) {
                     start_index = byte_idx * 8;
@@ -39,7 +39,7 @@ impl *mut Bitmap {
                 count += 8;
                 if (count >= length) {
                     self.lock..&.unlock();
-                    return start_index;
+                    return .{ Some:start_index};
                 }
             }else {
                 for (i: range(0, 8)) {
@@ -52,7 +52,7 @@ impl *mut Bitmap {
                         count+=1;
                         if (count == length) {
                             self.lock..&.unlock();
-                            return start_index;
+                            return .{Some: start_index};
                         }
                     } else {
                         count = 0;
@@ -62,10 +62,10 @@ impl *mut Bitmap {
             byte_idx += 1;
         }
         self.lock..&.unlock();
-        return -1 as usize;
+        return .None;
     }
 
-    pub fn find_range(length: usize, value: bool) usize {
+    pub fn find_range(length: usize, value: bool) ?usize {
         return self.find_range_from(length, value, 0);
     }
 

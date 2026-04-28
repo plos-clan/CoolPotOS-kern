@@ -1,6 +1,53 @@
 mod bitmap;
+pub mod page;
+
+use base.coll.range;
+use /boot.{boot_hhdm_offset, boot_get_memory_map, limine_memmap_type};
+use /mem.page.{PAGE_SIZE, padding_up};
+
+static mut physical_memory_offset = usize.{0};
+static mut memory_size = usize.{0};
 
 pub type FrameAllocator = trait {
     alloc_frame_4k: fn(usize) u64,
     free_frames: fn(u64, usize) void,
 };
+
+pub type VirtAddr = union {
+    
+};
+
+fn get_physical_memory_size() usize {
+    let mut all_memory_size = 0;
+    let memory_map = boot_get_memory_map();
+    for (i : range(memory_map.entry_count - 1, 0)) {
+        let region = (memory_map.entries + i as usize).*;
+        if (region.ty == limine_memmap_type.LIMINE_MEMMAP_USABLE) {
+            all_memory_size = region.base + region.length;
+            break;
+        }
+    }
+    all_memory_size as usize
+}
+
+pub fn init_frame() void {
+    physical_memory_offset = boot_hhdm_offset();
+    memory_size = get_physical_memory_size();
+
+    let total_frames = memory_size / PAGE_SIZE;
+    let bitmap_size = (total_frames + 7) / 8;
+    let bitmap_size_aligned = padding_up(bitmap_size, PAGE_SIZE);
+
+    let mut bitmap_address = 0;
+    for(i : range(0 as u64, boot_get_memory_map().entry_count)) {
+        let region = (boot_get_memory_map().entries + i as usize).*;
+        if (region.base < 0x100000) { // x86_64 中小于 1MB 物理地址不可用
+            continue;
+        }
+        if (region.ty == limine_memmap_type.LIMINE_MEMMAP_USABLE and region.length as usize >= bitmap_size_aligned) {
+            bitmap_address = region.base;
+            break;
+        }
+    }
+
+}

@@ -1,0 +1,11 @@
+[package]
+name = "mkarchive"
+version = "0.1.0"
+kern = "0.7.2"
+publish = false
+description = "Host tool that archives native object files into a static library"
+license = "MIT"
+
+[[bin]]
+name = "mkarchive"
+root = "src/main.rn"

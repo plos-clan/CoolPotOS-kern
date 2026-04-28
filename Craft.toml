@@ -14,6 +14,7 @@ bundle = "base"
 
 [build-dependencies]
 mkiso = { path = "./mkiso", package = "mkiso" }
+mkarchive = { path = "./mkarchive", package = "mkarchive" }
 
 [resources]
 limine = { git = "https://github.com/limine-bootloader/limine.git", tag = "v11.4.0-binary" }

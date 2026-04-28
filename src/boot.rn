@@ -1,4 +1,3 @@
-
 #[retain]
 #[link_section(".limine_requests_start")]
 static limine_requests_start_marker = [4]u64.{
@@ -47,12 +46,12 @@ extern type limine_framebuffer = struct {
     pub bpp: u16,
 
     memory_model:u8,
-    red_mask_size:u8,
-    red_mask_shift:u8,
-    green_mask_size:u8,
-    green_mask_shift:u8,
-    blue_mask_size:u8,
-    blue_mask_shift:u8,
+    pub red_mask_size:u8,
+    pub red_mask_shift:u8,
+    pub green_mask_size:u8,
+    pub green_mask_shift:u8,
+    pub blue_mask_size:u8,
+    pub blue_mask_shift:u8,
     unused: [7]u8,
 
     edid_size:u64,
@@ -84,21 +83,32 @@ pub type limine_memmap_type = enum {
 };
 
 pub extern type limine_memmap_entry = struct {
-    base: u64,
-    length: u64,
-    ty: limine_memmap_type,
+    pub base: u64,
+    pub length: u64,
+    pub ty: limine_memmap_type,
 };
 
 pub extern type limine_memmap_response = struct{
     revision: u64,
-    entry_count: u64,
-    entries: **limine_memmap_entry,
+    pub entry_count: u64,
+    pub entries: **limine_memmap_entry,
 };
 
 pub extern type limine_memmap_request = struct{
     id: [4]u64,
     revision: u64,
     response: *limine_memmap_response,
+};
+
+pub extern type limine_hhdm_response = struct {
+    revision: u64,
+    offset: u64,
+};
+
+pub extern type limine_hhdm_request = struct {
+    id: [4]u64,
+    revision: u64,
+    response: *limine_hhdm_response,
 };
 
 #[retain]
@@ -127,10 +137,22 @@ pub static mut memmap_request = limine_memmap_request .{
     response: 0 as *limine_memmap_response,
 };
 
+#[retain]
+#[link_section(".limine_requests")]
+pub static hhdm_request = limine_hhdm_request .{
+    id: .{0xc7b1dd30df4c8b88, 0x0a82e883a194f07b, 0x48dcf1cb8ad2b852, 0x63984e959a98244b},
+    revision: 0,
+    response: 0 as *limine_hhdm_response,
+};
+
 pub fn boot_framebuffer_respones() *limine_framebuffer_response {
     framebuffer_request.response
 }
 
-pub fn boot_memmap_respones() *limine_memmap_response {
+pub fn boot_get_memory_map() *limine_memmap_response {
     memmap_request.response
+}
+
+pub fn boot_hhdm_offset() usize {
+    hhdm_request.response.offset as usize
 }
