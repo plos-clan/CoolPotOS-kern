@@ -1,54 +1,36 @@
 use craft.builder;
 
-fn flanterm_generated_root(debug: bool) []u8 {
-    if (!debug) {
-        return ".craft/build/release/target/gen/coolpotos_kern-0.1.0/lib/coolpotos_kern";
-    }
-    return ".craft/build/dev/target/gen/coolpotos_kern-0.1.0/lib/coolpotos_kern";
-}
-
 pub fn build(b: *mut builder.Builder) void {
-    if (b.unit.kind == .lib) {
-        let flanterm = b.cc_config("flanterm/flanterm/flanterm.c", .{
-            include_dirs: .{"flanterm/flanterm"},
-            defines: .{},
-            args: .{
-                "-std=c11",
-                "-ffreestanding",
-            },
-            dependencies: .{},
-        });
-        let fb = b.cc_config("flanterm/flanterm/flanterm_backends/fb.c", .{
-            include_dirs: .{"flanterm/flanterm"},
-            defines: .{},
-            args: .{
-                "-std=c11",
-                "-ffreestanding",
-            },
-            dependencies: .{},
-        });
-        let flanterm_archive = b.stage_generated_from_tool(
-            "mkarchive",
-            "mkarchive",
-            "libflanterm.a",
-            .{
-                b.paths.build_root,
-                b.output_path(flanterm),
-                b.output_path(fb),
-            },
-        );
-        b.depend(flanterm_archive, flanterm);
-        b.depend(flanterm_archive, fb);
-        return;
-    }
-
     if (b.unit.kind != .bin) {
         return;
     }
 
+    let flanterm = b.cc_config("flanterm/flanterm/flanterm.c", .{
+        include_dirs: .{"flanterm/flanterm"},
+        defines: .{},
+        args: .{
+            "-std=c11",
+            "-ffreestanding",
+            "-mcmodel=kernel",
+            "-mno-red-zone",
+        },
+        dependencies: .{},
+    });
+    let fb = b.cc_config("flanterm/flanterm/flanterm_backends/fb.c", .{
+        include_dirs: .{"flanterm/flanterm"},
+        defines: .{},
+        args: .{
+            "-std=c11",
+            "-ffreestanding",
+            "-mcmodel=kernel",
+            "-mno-red-zone",
+        },
+        dependencies: .{},
+    });
+    let _ = flanterm;
+    let _ = fb;
+
     b.link_arg_path("-T", "linker.ld");
-    b.link_search(flanterm_generated_root(b.profile.debug));
-    b.link_system_lib("flanterm");
 
     let kernel = b.primary_artifact();
     let kernel_image = b.stage_copy_output_to_artifact(kernel, "iso-root/kernel");

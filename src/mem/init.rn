@@ -49,5 +49,6 @@ pub fn init_frame() void {
             break;
         }
     }
+    let _ = bitmap_address;
 
 }
