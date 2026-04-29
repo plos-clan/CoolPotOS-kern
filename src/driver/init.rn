@@ -1,0 +1,20 @@
+pub mod serial;
+
+pub fn io_in8(port: u16) u8 {
+    let mut data = u8.{undef};
+    @asm(.{
+        asm: "in al, dx",
+        outputs: .{ al: data..& },
+        inputs: .{ dx: port },
+        volatile: true
+    });
+    return data;
+}
+
+pub fn io_out8(port: u16, data: u8) void {
+    @asm(.{
+        asm: "out dx, al",
+        inputs: .{ al: data, dx: port },
+        volatile: true
+    });
+}
