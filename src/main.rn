@@ -1,16 +1,17 @@
 mod boot;
 pub mod term;
 pub mod mem;
+pub mod driver;
 pub mod lock;
 
 use /mem.init_frame;
-use /term.{terminal_init,terminal_write};
+use /term.{term_init,kprintf};
+use /driver.serial.write_serial_str;
 
 #[export_name("_start")]
 fn kmain() void {
-    let _ = terminal_init();
-
-    terminal_write("Hello! CPOS KERN!\n");
+    term_init();
+    kprintf("CoolPotOS CP_Kernel \n", .{});
     init_frame();
 
     while (true){

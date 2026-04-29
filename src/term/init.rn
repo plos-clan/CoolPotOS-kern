@@ -1,0 +1,27 @@
+pub mod term;
+
+use base.io.{Writer,Printable, format_to};
+use /term.term.{terminal_write,terminal_init};
+
+type OsWriter = struct {
+    
+};
+
+impl *mut OsWriter : Writer {
+    pub fn write(buf: []u8) usize {
+        terminal_write(buf);
+        buf.len()
+    }
+}
+
+static mut writer = 0 as *mut Writer;
+
+pub fn term_init() void {
+    let _ = terminal_init();
+    writer = *mut Writer.{ OsWriter.{}..& };
+}
+
+pub fn kprintf(fmt: []u8, args: []*Printable) void {
+    format_to(writer, fmt, args);
+}
+
