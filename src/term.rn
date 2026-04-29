@@ -94,7 +94,7 @@ pub fn terminal_init() bool {
         0 as *u32,
         0 as *u32,
         0 as *void,
-        0,0,0,0,0,0,0
+        0,0,0,0,0,0,256
     );
     return context as usize != 0;
 }
