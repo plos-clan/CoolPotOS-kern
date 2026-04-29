@@ -14,14 +14,15 @@ impl *mut OsWriter : Writer {
     }
 }
 
-static mut writer = 0 as *mut Writer;
+static mut writer = (?*mut Writer).None;
 
 pub fn term_init() void {
     let _ = terminal_init();
-    writer = *mut Writer.{ OsWriter.{}..& };
+    writer = .{ Some: OsWriter.{}..& };
 }
 
 pub fn kprintf(fmt: []u8, args: []*Printable) void {
+    let .{ Some: writer } = writer else @trap();
     format_to(writer, fmt, args);
 }
 
