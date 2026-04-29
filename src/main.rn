@@ -8,7 +8,7 @@ use /term.{terminal_init,terminal_write};
 
 #[export_name("_start")]
 fn kmain() void {
-    terminal_init();
+    let _ = terminal_init();
 
     terminal_write("Hello! CPOS KERN!\n");
     init_frame();

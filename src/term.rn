@@ -33,16 +33,46 @@ extern {
 }
 
 use /boot.boot_framebuffer_respones;
-use base.abi.cstr;
 
 static mut context = 0 as *void;
 
 pub fn terminal_write(text: []u8) void {
+    if (context as usize == 0 or text.len() == 0) {
+        return;
+    }
     flanterm_write(context as *mut void, text.[0].&, text.len());
+    flanterm_flush(context as *mut void);
 }
 
-pub fn terminal_init() void {
-    let framebuffer = (boot_framebuffer_respones().framebuffers).*;
+pub fn terminal_put(byte: u8) void {
+    if (context as usize == 0) {
+        return;
+    }
+    flanterm_putchar(context as *mut void, byte);
+    flanterm_flush(context as *mut void);
+}
+
+pub fn terminal_flush() void {
+    if (context as usize == 0) {
+        return;
+    }
+    flanterm_flush(context as *mut void);
+}
+
+pub fn terminal_init() bool {
+    let response = boot_framebuffer_respones();
+    if (response as usize == 0) {
+        return false;
+    }
+    if (response.framebuffer_count == 0 or response.framebuffers as usize == 0) {
+        return false;
+    }
+
+    let framebuffer = response.framebuffers.*;
+    if (framebuffer as usize == 0 or framebuffer.address as usize == 0) {
+        return false;
+    }
+
     context = flanterm_fb_init(
         0 as *void,
         0 as *void,
@@ -66,4 +96,5 @@ pub fn terminal_init() void {
         0 as *void,
         0,0,0,0,0,0,0
     );
+    return context as usize != 0;
 }
