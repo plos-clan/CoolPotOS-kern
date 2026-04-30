@@ -22,8 +22,10 @@ static mut dwriter = (?*mut Writer).None;
 
 pub fn term_init() void {
     let _ = terminal_init();
-    writer = .{ Some: OsWriter.{serial: false}..& };
-    dwriter = .{ Some: OsWriter.{serial: true}..& };
+    static mut main_writer = OsWriter.{serial: false};
+    static mut debug_writer = OsWriter.{serial: true};
+    writer = .{ Some: main_writer..& };
+    dwriter = .{ Some: debug_writer..& };
 }
 
 pub fn kprintf(fmt: []u8, args: []*Printable) void {
@@ -35,4 +37,3 @@ pub fn dprintf(fmt: []u8, args: []*Printable) void {
     let .{ Some: dwriter } = dwriter else @trap();
     format_to(dwriter, fmt, args);
 }
-
