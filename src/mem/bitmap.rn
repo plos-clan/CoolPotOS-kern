@@ -4,7 +4,7 @@ use base.coll.range;
 pub type Bitmap = struct {
     lock: SpinLock,
     buffer: *u8,
-    length: usize,
+    pub length: usize,
     bitmap_refcount: u64,
 };
 

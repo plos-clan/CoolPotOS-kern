@@ -2,11 +2,20 @@ mod bitmap;
 pub mod page;
 
 use base.coll.range;
-use /boot.{boot_hhdm_offset, boot_get_memory_map, limine_memmap_type};
+use /boot.{boot_hhdm_offset, boot_get_memory_map, limine_memmap_type, boot_hhdm_offset};
 use /mem.page.{PAGE_SIZE, padding_up};
+use /mem.bitmap.{Bitmap,bitmap_init};
+use /lock.SPIN_UNLOCKED;
+use /term.{dprintf,kprintf};
 
 static mut physical_memory_offset = usize.{0};
 static mut memory_size = usize.{0};
+static mut usable_regions = Bitmap.{
+    lock: SPIN_UNLOCKED,
+    buffer: 0 as *u8,
+    length: 0,
+    bitmap_refcount: 1
+};
 
 pub type FrameAllocator = trait {
     alloc_frame_4k: fn(usize) u64,
@@ -16,6 +25,10 @@ pub type FrameAllocator = trait {
 pub type VirtAddr = union {
     
 };
+
+pub fn phy_to_virt(addr: usize) *void {
+    (addr + boot_hhdm_offset()) as *void
+}
 
 fn get_physical_memory_size() usize {
     let mut all_memory_size = 0;
@@ -38,18 +51,27 @@ pub fn init_frame() void {
     let bitmap_size = (total_frames + 7) / 8;
     let bitmap_size_aligned = padding_up(bitmap_size, PAGE_SIZE);
 
-    let mut bitmap_address = 0;
+    let mut bitmap_address = usize.{0};
     for(i : range(0 as u64, boot_get_memory_map().entry_count)) {
         let region = (boot_get_memory_map().entries + i as usize).*;
         if (region.base < 0x100000) { // x86_64 中小于 1MB 物理地址不可用
             continue;
         }
         if (region.ty == limine_memmap_type.LIMINE_MEMMAP_USABLE and region.length as usize >= bitmap_size_aligned) {
-            bitmap_address = region.base;
+            bitmap_address = region.base as usize;
             break;
         }
     }
-    let _ = bitmap_address;
+    if(bitmap_address == 0) {
+        dprintf("Error: cannot find bitmap area.\n\r", .{});
+        while (true){
+            @asm(.{
+                asm: "hlt",
+                volatile: true
+            });
+        }
+    }
+    usable_regions = bitmap_init(phy_to_virt(bitmap_address) as *u8,bitmap_size);
 
-
+    kprintf("usable regions length={} size={}\n",.{usable_regions.length, bitmap_size});
 }

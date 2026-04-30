@@ -2,27 +2,37 @@ pub mod term;
 
 use base.io.{Writer,Printable, format_to};
 use /term.term.{terminal_write,terminal_init};
+use /driver.serial.write_serial_str;
 
 type OsWriter = struct {
-    
+    serial: bool,
 };
 
 impl *mut OsWriter : Writer {
     pub fn write(buf: []u8) usize {
-        terminal_write(buf);
+        if (self.serial) {
+            write_serial_str(buf);
+        } else {terminal_write(buf);}
         buf.len()
     }
 }
 
 static mut writer = (?*mut Writer).None;
+static mut dwriter = (?*mut Writer).None;
 
 pub fn term_init() void {
     let _ = terminal_init();
-    writer = .{ Some: OsWriter.{}..& };
+    writer = .{ Some: OsWriter.{serial: false}..& };
+    dwriter = .{ Some: OsWriter.{serial: true}..& };
 }
 
 pub fn kprintf(fmt: []u8, args: []*Printable) void {
     let .{ Some: writer } = writer else @trap();
     format_to(writer, fmt, args);
+}
+
+pub fn dprintf(fmt: []u8, args: []*Printable) void {
+    let .{ Some: dwriter } = dwriter else @trap();
+    format_to(dwriter, fmt, args);
 }
 
