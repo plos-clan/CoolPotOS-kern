@@ -8,13 +8,11 @@ pub type Bitmap = struct {
     bitmap_refcount: u64,
 };
 
-pub fn bitmap_init(buffer: *u8,size: usize) Bitmap {
-    return .{
-        lock: SPIN_UNLOCKED,
-        buffer: buffer,
-        length: size * 8,
-        bitmap_refcount: 1
-    };
+pub fn bitmap_init(bitmap: *mut Bitmap,buffer: *u8,size: usize) void {
+    bitmap.lock = SPIN_UNLOCKED;
+    bitmap.buffer = buffer;
+    bitmap.length = size * 8;
+    bitmap.bitmap_refcount = 1;
 }
 
 impl *mut Bitmap {

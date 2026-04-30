@@ -71,7 +71,30 @@ pub fn init_frame() void {
             });
         }
     }
-    usable_regions = bitmap_init(phy_to_virt(bitmap_address) as *u8,bitmap_size);
+    bitmap_init(usable_regions..& ,phy_to_virt(bitmap_address) as *u8,bitmap_size);
 
-    kprintf("usable regions length={} size={}\n",.{usable_regions.length, bitmap_size});
+    for(i : range(0 as u64, boot_get_memory_map().entry_count)) {
+        let region = (boot_get_memory_map().entries + i as usize).*;
+        if (region.base < 0x100000) {
+            continue;
+        }
+        if (region.ty == limine_memmap_type.LIMINE_MEMMAP_USABLE) {
+            let start_frame = region.base as usize / PAGE_SIZE;
+            let end_frame   = (region.base + region.length) as usize / PAGE_SIZE;
+            if (end_frame > start_frame) {
+                usable_regions..&.set_range(start_frame, end_frame, true);
+            }
+        }
+    }
+    
+    // 保留低 1MB
+    let low_1M_frames = 0x100000 / PAGE_SIZE;
+    usable_regions..&.set_range(0, low_1M_frames, false);
+
+    // 标记 bitmap 自身占用的区域为不可用
+    let bitmap_frame_start = bitmap_address / PAGE_SIZE;
+    let bitmap_frame_end   = padding_up(bitmap_address + bitmap_size, PAGE_SIZE) / PAGE_SIZE;
+    usable_regions..&.set_range(bitmap_frame_start, bitmap_frame_end, false);
+
+    
 }
