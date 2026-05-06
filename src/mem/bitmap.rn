@@ -3,8 +3,8 @@ use base.coll.range;
 
 pub type Bitmap = struct {
     lock: SpinLock,
-    buffer: *u8,
-    pub length: usize,
+    pub buffer: *u8,
+    length: usize,
     bitmap_refcount: u64,
 };
 

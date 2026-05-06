@@ -73,6 +73,8 @@ pub fn init_frame() void {
     }
     bitmap_init(usable_regions..& ,phy_to_virt(bitmap_address) as *u8,bitmap_size);
 
+    dprintf("addr: {}\n", .{usable_regions.buffer as usize});
+
     for(i : range(0 as u64, boot_get_memory_map().entry_count)) {
         let region = (boot_get_memory_map().entries + i as usize).*;
         if (region.base < 0x100000) {
