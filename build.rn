@@ -1,6 +1,6 @@
 use craft.builder;
 
-pub fn build(b: *mut builder.Builder) void {
+pub fn build(b: &mut builder.Builder) void {
     if (b.unit.kind != .bin) {
         return;
     }

@@ -1,39 +1,39 @@
 pub mod term;
 
-use base.io.{Writer,Printable, format_to};
+use base.io.{Formatable, Write};
 use /term.term.{terminal_write,terminal_init};
 use /driver.serial.write_serial_str;
 
-type OsWriter = struct {
+struct OsWriter {
     serial: bool,
 };
 
-impl *mut OsWriter : Writer {
-    pub fn write(buf: []u8) usize {
+impl &mut OsWriter : Write {
+    pub fn write(buf: &[u8]) usize {
         if (self.serial) {
             write_serial_str(buf);
-        } else {terminal_write(buf);}
+        } else { terminal_write(buf); }
         buf.len()
     }
 }
 
-static mut writer = (?*mut Writer).None;
-static mut dwriter = (?*mut Writer).None;
+static mut writer = (?&mut Write).None;
+static mut dwriter = (?&mut Write).None;
 
 pub fn term_init() void {
     let _ = terminal_init();
     static mut main_writer = OsWriter.{serial: false};
     static mut debug_writer = OsWriter.{serial: true};
-    writer = .{ Some: main_writer..& };
-    dwriter = .{ Some: debug_writer..& };
+    writer = .{ Some: &mut Write.{ main_writer..& } };
+    dwriter = .{ Some: &mut Write.{ debug_writer..& } };
 }
 
-pub fn kprintf(fmt: []u8, args: []*Printable) void {
-    let .{ Some: writer } = writer else @trap();
-    format_to(writer, fmt, args);
+pub fn kprintf(fmt: &[u8], args: &[&Formatable]) void {
+    let .{ Some: out } = writer else @trap();
+    fmt.fmt(args).write_to(out);
 }
 
-pub fn dprintf(fmt: []u8, args: []*Printable) void {
-    let .{ Some: dwriter } = dwriter else @trap();
-    format_to(dwriter, fmt, args);
+pub fn dprintf(fmt: &[u8], args: &[&Formatable]) void {
+    let .{ Some: out } = dwriter else @trap();
+    fmt.fmt(args).write_to(out);
 }

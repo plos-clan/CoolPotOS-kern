@@ -1,4 +1,4 @@
-pub type SpinLock = struct {
+pub struct SpinLock {
     state: u8,
 };
 
@@ -12,7 +12,7 @@ const ATOMIC_RELAXED = 0;
 const ATOMIC_ACQUIRE = 1;
 const ATOMIC_RELEASE = 2;
 
-impl *mut SpinLock {
+impl &mut SpinLock {
     pub fn lock() void {
         while (true) {
             let attempt = @atomicCas[u8](

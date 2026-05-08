@@ -10,8 +10,10 @@ pub fn write_serial(ch: u8) void {
     write_serial0(0x3f8, ch);
 }
 
-pub fn write_serial_str(text: []u8) void {
-    for(ch: text.iter()) {
-        write_serial(ch);
+pub fn write_serial_str(text: &[u8]) void {
+    let mut i = usize.{0};
+    while (i < #text) {
+        write_serial(text.[i]);
+        i += 1;
     }
 }

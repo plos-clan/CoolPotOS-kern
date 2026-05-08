@@ -1,9 +1,9 @@
 extern {
-    pub fn flanterm_write(ctx: *mut void, buf: *u8, count: usize) void;
-    pub fn flanterm_flush(ctx: *mut void) void;
-    pub fn flanterm_putchar(ctx: *mut void, c: u8) void;
-    pub fn flanterm_fb_init(malloc: *void, free: *void,
-    framebuffer: *u32,
+    pub fn flanterm_write(ctx: &mut void, buf: &u8, count: usize) void;
+    pub fn flanterm_flush(ctx: &mut void) void;
+    pub fn flanterm_putchar(ctx: &mut void, c: u8) void;
+    pub fn flanterm_fb_init(malloc: &void, free: &void,
+    framebuffer: &mut u32,
     wight: usize, 
     height: usize, 
     pitch: usize,
@@ -13,15 +13,15 @@ extern {
     green_mask_shift:u8,
     blue_mask_size:u8,
     blue_mask_shift:u8,
-    canvas: *u32, /* If nulled, no canvas. */
-    ansi_colours: *u32,
-    ansi_bright_colours: *u32, /* If nulled, default. */
-    default_bg: *u32,
-    default_fg: *u32, /* If nulled, default. */
-    default_bg_bright: *u32,
-    default_fg_bright: *u32, /* If nulled, default. */
+    canvas: &mut u32, /* If nulled, no canvas. */
+    ansi_colours: &mut u32,
+    ansi_bright_colours: &mut u32, /* If nulled, default. */
+    default_bg: &mut u32,
+    default_fg: &mut u32, /* If nulled, default. */
+    default_bg_bright: &mut u32,
+    default_fg_bright: &mut u32, /* If nulled, default. */
     /* If font is null, use default font and font_width and font_height ignored. */
-    font: *void,
+    font: &void,
     font_width:usize,
     font_height:usize,
     font_spacing:usize,
@@ -29,34 +29,34 @@ extern {
     font_scale_x:usize,
     font_scale_y:usize,
     margin:usize,
-    num_glyph: u32) *void;
+    num_glyph: u32) &mut void;
 }
 
 use /boot.boot_framebuffer_respones;
 
-static mut context = 0 as *void;
+static mut context = 0 as &mut void;
 
-pub fn terminal_write(text: []u8) void {
+pub fn terminal_write(text: &[u8]) void {
     if (context as usize == 0 or text.len() == 0) {
         return;
     }
-    flanterm_write(context as *mut void, text.[0].&, text.len());
-    flanterm_flush(context as *mut void);
+    flanterm_write(context, text.[0].&, text.len());
+    flanterm_flush(context);
 }
 
 pub fn terminal_put(byte: u8) void {
     if (context as usize == 0) {
         return;
     }
-    flanterm_putchar(context as *mut void, byte);
-    flanterm_flush(context as *mut void);
+    flanterm_putchar(context, byte);
+    flanterm_flush(context);
 }
 
 pub fn terminal_flush() void {
     if (context as usize == 0) {
         return;
     }
-    flanterm_flush(context as *mut void);
+    flanterm_flush(context);
 }
 
 pub fn terminal_init() bool {
@@ -74,8 +74,8 @@ pub fn terminal_init() bool {
     }
 
     context = flanterm_fb_init(
-        0 as *void,
-        0 as *void,
+        0 as &void,
+        0 as &void,
         framebuffer.address,
         framebuffer.width as usize,
         framebuffer.height as usize,
@@ -86,14 +86,14 @@ pub fn terminal_init() bool {
         framebuffer.green_mask_shift,
         framebuffer.blue_mask_size,
         framebuffer.blue_mask_shift,
-        0 as *u32,
-        0 as *u32,
-        0 as *u32,
-        0 as *u32,
-        0 as *u32,
-        0 as *u32,
-        0 as *u32,
-        0 as *void,
+        0 as &mut u32,
+        0 as &mut u32,
+        0 as &mut u32,
+        0 as &mut u32,
+        0 as &mut u32,
+        0 as &mut u32,
+        0 as &mut u32,
+        0 as &void,
         0,0,0,0,0,0,256
     );
     return context as usize != 0;

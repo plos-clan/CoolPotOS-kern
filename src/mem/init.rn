@@ -12,22 +12,22 @@ static mut physical_memory_offset = usize.{0};
 static mut memory_size = usize.{0};
 static mut usable_regions = Bitmap.{
     lock: SPIN_UNLOCKED,
-    buffer: 0 as *u8,
+    buffer: 0 as &mut u8,
     length: 0,
     bitmap_refcount: 1
 };
 
-pub type FrameAllocator = trait {
-    alloc_frame_4k: fn(usize) u64,
-    free_frames: fn(u64, usize) void,
+pub trait FrameAllocator {
+    fn alloc_frame_4k(_: usize) u64;
+    fn free_frames(_: u64, _: usize) void;
 };
 
-pub type VirtAddr = union {
+pub union VirtAddr {
     
 };
 
-pub fn phy_to_virt(addr: usize) *void {
-    (addr + boot_hhdm_offset()) as *void
+pub fn phy_to_virt(addr: usize) &mut void {
+    (addr + boot_hhdm_offset()) as &mut void
 }
 
 fn get_physical_memory_size() usize {
@@ -71,7 +71,7 @@ pub fn init_frame() void {
             });
         }
     }
-    bitmap_init(usable_regions..& ,phy_to_virt(bitmap_address) as *u8,bitmap_size);
+    bitmap_init(usable_regions..& ,phy_to_virt(bitmap_address) as &mut u8,bitmap_size);
 
     dprintf("addr: {}\n", .{usable_regions.buffer as usize});
 
