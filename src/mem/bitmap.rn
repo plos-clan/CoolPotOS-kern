@@ -2,10 +2,10 @@ use /lock.{SpinLock, SPIN_UNLOCKED};
 use base.coll.range;
 
 pub struct Bitmap {
-    lock: SpinLock,
+    pub lock: SpinLock,
     pub buffer: &mut u8,
-    length: usize,
-    bitmap_refcount: u64,
+    pub length: usize,
+    pub bitmap_refcount: u64,
 };
 
 pub fn bitmap_init(bitmap: &mut Bitmap, buffer: &mut u8, size: usize) void {

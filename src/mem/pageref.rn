@@ -1,0 +1,20 @@
+use /mem.page.PAGE_SIZE;
+use /mem.{get_memory_size,early_alloc};
+
+pub type page_ref = struct {
+    refcount: i32
+};
+
+static mut page_maps = 0 as &page_ref;
+
+pub fn page_ref_init() void {
+    let page_maps_size = get_memory_size() / PAGE_SIZE * @sizeOf[page_ref]();
+    let .{Some:alloc_addr} = early_alloc(page_maps_size) else {
+        return;
+    };
+    page_maps = alloc_addr as &page_ref;
+}
+
+pub fn get_page_ref(addr: usize) &page_ref {
+    return page_maps + (addr / PAGE_SIZE);
+}

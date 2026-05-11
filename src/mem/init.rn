@@ -1,13 +1,17 @@
 mod bitmap;
 pub mod page;
+mod pageref;
 
 use base.coll.range;
 use /boot.{boot_hhdm_offset, boot_get_memory_map, limine_memmap_type, boot_hhdm_offset};
 use /mem.page.{PAGE_SIZE, padding_up};
 use /mem.bitmap.{Bitmap,bitmap_init};
-use /lock.SPIN_UNLOCKED;
+use /mem.pageref.page_ref_init;
+use /lock.{SpinLock, SPIN_UNLOCKED};
 use /term.{dprintf,kprintf};
 
+static mut frame_op_lock = SPIN_UNLOCKED;
+static mut early_last_alloc_pos = usize.{0};
 static mut physical_memory_offset = usize.{0};
 static mut memory_size = usize.{0};
 static mut usable_regions = Bitmap.{
@@ -41,6 +45,45 @@ fn get_physical_memory_size() usize {
         }
     }
     all_memory_size as usize
+}
+
+fn alloc_frames_early(count: usize) usize {
+    if(count == 0) return 0;
+    frame_op_lock..&.lock();
+    let bitmap = usable_regions..&;
+    let frame_index0 = bitmap.find_range_from(count, true, early_last_alloc_pos);
+
+    let .{Some:frame_index} = frame_index0 else {
+        frame_op_lock..&.unlock();
+        return 0;
+    };
+
+    if(frame_index + count > bitmap.length) {
+        frame_op_lock..&.unlock();
+        return 0;
+    }
+
+    bitmap.set_range(frame_index, frame_index + count, false);
+    early_last_alloc_pos = frame_index + count;
+
+    frame_op_lock..&.unlock();
+    return 0;
+}
+
+pub fn early_alloc(size: usize) ?&void{
+    if (size == 0) return .None;
+
+    let aligned_size = (size + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+    let phys = alloc_frames_early(aligned_size / PAGE_SIZE);
+    if (phys == 0) return .None;
+
+    let mut ptr = phy_to_virt(phys);
+    @memset(ptr as &mut u8, 0, aligned_size);
+    return .{Some:ptr};
+}
+
+pub fn get_memory_size() usize {
+    return memory_size;
 }
 
 pub fn init_frame() void {
@@ -98,5 +141,5 @@ pub fn init_frame() void {
     let bitmap_frame_end   = padding_up(bitmap_address + bitmap_size, PAGE_SIZE) / PAGE_SIZE;
     usable_regions..&.set_range(bitmap_frame_start, bitmap_frame_end, false);
 
-    
+    page_ref_init();
 }
