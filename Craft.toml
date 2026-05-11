@@ -19,8 +19,8 @@ code-model = "kernel"
 code-model = "kernel"
 
 [build-dependencies]
-mkiso = { path = "./mkiso", package = "mkiso" }
-mkarchive = { path = "./mkarchive", package = "mkarchive" }
+mkiso = { path = "./mkiso", export = "mkiso" }
+mkarchive = { path = "./mkarchive", export = "mkarchive" }
 
 [resources]
 limine = { git = "https://github.com/limine-bootloader/Limine.git", tag = "v11.4.0-binary" }
