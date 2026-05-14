@@ -13,7 +13,7 @@ impl &mut OsWriter : Write {
         if (self.serial) {
             write_serial_str(buf);
         } else { terminal_write(buf); }
-        buf.@len()
+        buf.len()
     }
 }
 

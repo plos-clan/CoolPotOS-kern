@@ -37,10 +37,10 @@ use /boot.boot_framebuffer_respones;
 static mut context = 0usize as &mut void;
 
 pub fn terminal_write(text: &[u8]) void {
-    if (context as usize == 0 or text.@len() == 0) {
+    if (context as usize == 0 or text.len() == 0) {
         return;
     }
-    flanterm_write(context, text.[0].&, text.@len());
+    flanterm_write(context, text.ptr(), text.len());
     flanterm_flush(context);
 }
 

@@ -12,7 +12,7 @@ pub fn write_serial(ch: u8) void {
 
 pub fn write_serial_str(text: &[u8]) void {
     let mut i = 0usize;
-    while (i < text.@len()) {
+    while (i < text.len()) {
         write_serial(text.[i]);
         i += 1;
     }

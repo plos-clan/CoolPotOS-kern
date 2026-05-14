@@ -27,7 +27,7 @@ fn push_shell_arg(out: &mut String, alloc: &mut base.mem.alloc.Allocator, arg: &
         return false;
     }
     let mut i = 0usize;
-    while (i < arg.@len()) {
+    while (i < arg.len()) {
         if (arg.[i] == b'\'') {
             if (out.try_push_str(alloc, "'\"'\"'").is_ok().not()) {
                 return false;
