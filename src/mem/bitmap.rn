@@ -1,5 +1,5 @@
 use /lock.{SpinLock, SPIN_UNLOCKED};
-use base.coll.range;
+use base.coll.Iterator;
 
 pub struct Bitmap {
     pub lock: SpinLock,
@@ -20,7 +20,7 @@ impl &mut Bitmap {
         self.lock..&.lock();
         let mut count = 0;
         let mut start_index = 0;
-        let byte_match = if (value)  {-1 as u8} else  {0};
+        let byte_match: u8 = if (value)  {255} else  {0};
         let mut byte_idx = start_from / 8;
         while (byte_idx < self.length / 8) {
             let byte = (self.buffer +byte_idx).*;
@@ -40,7 +40,7 @@ impl &mut Bitmap {
                     return .{ Some:start_index};
                 }
             }else {
-                for (i: range(0, 8)) {
+                for (i: 0usize...8usize) {
                     let bit = i as usize;
                     let bit_value = (byte as usize >> bit) & 1 != 0;
                     if (bit_value == value) {
@@ -91,7 +91,7 @@ impl &mut Bitmap {
         let end_word   = end / 8;
 
         let iter_end = (if(start_word * 8 < end) (start_word * 8) else (end));
-        for (i : range(start,iter_end)) {
+        for (i : start...iter_end) {
             self.set(i as usize, value);
         }
 
@@ -101,15 +101,15 @@ impl &mut Bitmap {
         }
 
         if (start_word <= end_word) {
-            let fill_value = if (value) -1 as u8 else 0;
-            for (i: range(start_word, end_word)) {
+            let fill_value: u8 = if (value) 255 else 0;
+            for (i: start_word...end_word) {
                 let m_buffer = (self.buffer + (i as usize)) as &mut u8;
                 m_buffer.* = fill_value;
             }
         }
 
         let iter_start = (if(end_word * 8 > start) (end_word * 8) else (start));
-        for (i : range(iter_start, end)) {
+        for (i : iter_start...end) {
             self.set(i as usize, value);
         }
         self.lock..&.unlock();

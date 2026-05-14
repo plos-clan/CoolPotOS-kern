@@ -13,7 +13,7 @@ impl &mut OsWriter : Write {
         if (self.serial) {
             write_serial_str(buf);
         } else { terminal_write(buf); }
-        buf.len()
+        buf.@len()
     }
 }
 
@@ -24,8 +24,8 @@ pub fn term_init() void {
     let _ = terminal_init();
     static mut main_writer = OsWriter.{serial: false};
     static mut debug_writer = OsWriter.{serial: true};
-    writer = .{ Some: &mut Write.{ main_writer..& } };
-    dwriter = .{ Some: &mut Write.{ debug_writer..& } };
+    writer = .{ Some: main_writer..& as &mut Write };
+    dwriter = .{ Some: debug_writer..& as &mut Write };
 }
 
 pub fn kprintf(fmt: &[u8], args: &[&Formatable]) void {

@@ -34,13 +34,13 @@ extern {
 
 use /boot.boot_framebuffer_respones;
 
-static mut context = 0 as &mut void;
+static mut context = 0usize as &mut void;
 
 pub fn terminal_write(text: &[u8]) void {
-    if (context as usize == 0 or text.len() == 0) {
+    if (context as usize == 0 or text.@len() == 0) {
         return;
     }
-    flanterm_write(context, text.[0].&, text.len());
+    flanterm_write(context, text.[0].&, text.@len());
     flanterm_flush(context);
 }
 
@@ -74,8 +74,8 @@ pub fn terminal_init() bool {
     }
 
     context = flanterm_fb_init(
-        0 as &void,
-        0 as &void,
+        0usize as &void,
+        0usize as &void,
         framebuffer.address,
         framebuffer.width as usize,
         framebuffer.height as usize,
@@ -86,15 +86,15 @@ pub fn terminal_init() bool {
         framebuffer.green_mask_shift,
         framebuffer.blue_mask_size,
         framebuffer.blue_mask_shift,
-        0 as &mut u32,
-        0 as &mut u32,
-        0 as &mut u32,
-        0 as &mut u32,
-        0 as &mut u32,
-        0 as &mut u32,
-        0 as &mut u32,
-        0 as &void,
-        0,0,0,0,0,0,256
+        0usize as &mut u32,
+        0usize as &mut u32,
+        0usize as &mut u32,
+        0usize as &mut u32,
+        0usize as &mut u32,
+        0usize as &mut u32,
+        0usize as &mut u32,
+        0usize as &void,
+        0usize, 0usize, 0usize, 0usize, 0usize, 0usize, 256
     );
     return context as usize != 0;
 }

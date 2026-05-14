@@ -116,7 +116,7 @@ pub extern struct limine_hhdm_request {
 static stack_size_request = limine_stack_size_request .{
     id: .{0xc7b1dd30df4c8b88, 0x0a82e883a194f07b, 0x224ef0460a8e8926, 0xe1cb0fc25f46ea3d},
     revision: 0,
-    response: 0 as &limine_stack_size_response,
+    response: 0usize as &limine_stack_size_response,
     stack_size: 131072,
 };
 
@@ -125,7 +125,7 @@ static stack_size_request = limine_stack_size_request .{
 pub static mut framebuffer_request = limine_framebuffer_request .{
     id: .{0xc7b1dd30df4c8b88, 0x0a82e883a194f07b, 0x9d5827dcd881dd75, 0xa3148604f6fab11b},
     revision: 0,
-    response: 0 as &limine_framebuffer_response,
+    response: 0usize as &limine_framebuffer_response,
 };
 
 
@@ -134,7 +134,7 @@ pub static mut framebuffer_request = limine_framebuffer_request .{
 pub static mut memmap_request = limine_memmap_request .{
     id: .{0xc7b1dd30df4c8b88, 0x0a82e883a194f07b, 0x67cf3d9d378a806f, 0xe304acdfc50c3c62},
     revision: 0,
-    response: 0 as &limine_memmap_response,
+    response: 0usize as &limine_memmap_response,
 };
 
 #[retain]
@@ -142,7 +142,7 @@ pub static mut memmap_request = limine_memmap_request .{
 pub static hhdm_request = limine_hhdm_request .{
     id: .{0xc7b1dd30df4c8b88, 0x0a82e883a194f07b, 0x48dcf1cb8ad2b852, 0x63984e959a98244b},
     revision: 0,
-    response: 0 as &limine_hhdm_response,
+    response: 0usize as &limine_hhdm_response,
 };
 
 pub fn boot_framebuffer_respones() &limine_framebuffer_response {

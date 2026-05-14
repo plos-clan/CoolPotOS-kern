@@ -2,15 +2,15 @@ pub struct SpinLock {
     state: u8,
 };
 
-const LOCK_STATE_UNLOCKED = u8.{0};
-const LOCK_STATE_LOCKED = u8.{1};
+const LOCK_STATE_UNLOCKED: u8 = 0;
+const LOCK_STATE_LOCKED: u8 = 1;
 
 pub const SPIN_UNLOCKED = SpinLock.{ state: LOCK_STATE_UNLOCKED };
 pub const SPIN_LOCKED = SpinLock.{ state: LOCK_STATE_LOCKED };
 
-const ATOMIC_RELAXED = 0;
-const ATOMIC_ACQUIRE = 1;
-const ATOMIC_RELEASE = 2;
+const ATOMIC_RELAXED: u8 = 0;
+const ATOMIC_ACQUIRE: u8 = 1;
+const ATOMIC_RELEASE: u8 = 2;
 
 impl &mut SpinLock {
     pub fn lock() void {

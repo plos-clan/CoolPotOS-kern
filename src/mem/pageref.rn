@@ -5,7 +5,7 @@ pub type page_ref = struct {
     refcount: i32
 };
 
-static mut page_maps = 0 as &page_ref;
+static mut page_maps = 0usize as &page_ref;
 
 pub fn page_ref_init() void {
     let page_maps_size = get_memory_size() / PAGE_SIZE * @sizeOf[page_ref]();

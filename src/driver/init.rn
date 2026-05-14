@@ -1,7 +1,7 @@
 pub mod serial;
 
 pub fn io_in8(port: u16) u8 {
-    let mut data = u8.{undef};
+    let mut data: u8 = undef;
     @asm(.{
         asm: "in al, dx",
         outputs: .{ al: data..& },
